@@ -8,12 +8,9 @@ It takes multiple CSV exports (one per workshop), merges them into a single data
 
 ## Why this exists
 
-Managing workshop registrations manually becomes messy very quickly:
-- duplicate sign-ups  
-- inconsistent CSV formats  
-- uneven workshop distribution  
+Attendees sign up for workshops through Google Forms, which spits out one CSV per workshop. The problem: people register for multiple workshops, and when a workshop is half-empty while another is overbooked, you need to figure out who to redirect — and email them accordingly.
 
-This tool was written to solve that in a way that is fast, visual, and practical during event preparation.
+This app loads all the CSVs, deduplicates by email, builds a profile for each attendee, and tells you exactly who to confirm where.
 
 ---
 
@@ -68,15 +65,19 @@ This tool was written to solve that in a way that is fast, visual, and practical
 ## Installation
 
 ```bash
+git clone 
+cd camasm-workshop-manager
 pip install -r requirements.txt
-python app.py
+python3 app.py
 ```
 
 ---
 
 ## Expected CSV structure
 
-Flexible — only one requirement:
+Each file should correspond to one workshop. The filename becomes the workshop name in the app, so name them something sensible (Surgery_Simulation.csv, ECG_Interpretation.csv, etc.).
+
+The app auto-detects columns using keyword matching, so exact header names don't matter much. It looks for:
 
 | Field  | Required | Notes |
 |--------|----------|------|
@@ -84,6 +85,17 @@ Flexible — only one requirement:
 | Name (First)   | No       | Used for display |
 | Name (Last)   | No       | Used for display |
 | Year   | No       | Used in analytics |
+
+| Field | Recognised keywords |
+|---|---|
+| Email | `email`, `e-mail`, `mail` |
+| First name | `first`, `given`, `forename` |
+| Last name | `last`, `surname`, `family` |
+| Full name (fallback) | `full`, `name`, `student` |
+| Year of study | `year`, `semester`, `study`, `grade` |
+ 
+If detection gets it wrong for a particular file, you can override each column from the dropdown before building. Only the email column is required — everything else is optional.
+
 
 ### Notes
 
@@ -122,20 +134,22 @@ Each workshop should have its own CSV file.
 
 If someone registers for multiple workshops:
 
-- Workshops are ranked by number of attendees  
-- The attendee is assigned to the least-subscribed one  
-- Other registrations remain visible for reference  
-
-This helps balance attendance without forcing manual decisions.
+The app ranks their workshops by current unique registrant count and suggests confirming them in the least-subscribed one. It doesn't try to optimise globally — it just makes a greedy per-attendee suggestion based on the current snapshot. Good enough for the actual problem, which is filling workshops that would otherwise run half-empty.
+ 
+The allocation is a suggestion, not a decision. You still send the emails manually.
 
 ---
 
 ## Context
 
-Built for the Cyprus Annual Medical Student Meeting (CAMeSM) to streamline workshop coordination at scale.
+Built for the Cyprus Annual Medical Student Meeting (CAMeSM) 2026 to streamline workshop coordination at scale.
 
 ---
 
 ## License
 
 This project is licensed under the MIT License — see the `LICENSE` file for details.
+
+---
+
+*Written by Alexandros Kordatzakis — CAMeSM Workshops Coordinator & IT/Web Developer*
